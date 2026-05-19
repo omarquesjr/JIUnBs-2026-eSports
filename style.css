@@ -25,7 +25,7 @@
     --font-body: 'Inter', sans-serif;
     
     /* Layout */
-    --border-radius: 12px;
+    --border-radius: 8px;
     --transition-fast: 0.2s ease;
 }
 
@@ -54,7 +54,7 @@ body {
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--bg-panel-border);
-    padding: 1rem 2rem;
+    padding: 0.75rem 2rem;
     position: sticky;
     top: 0;
     z-index: 100;
@@ -72,7 +72,7 @@ body {
 
 .logo {
     font-family: var(--font-heading);
-    font-size: 1.8rem;
+    font-size: 1.5rem;
     font-weight: 900;
     letter-spacing: -0.5px;
 }
@@ -84,7 +84,7 @@ body {
 .logo .esports-text {
     color: var(--accent-primary);
     text-transform: uppercase;
-    font-size: 1.2rem;
+    font-size: 1rem;
     letter-spacing: 2px;
 }
 
@@ -96,6 +96,7 @@ body {
 }
 
 .game-selector label {
+    font-size: 0.9rem;
     font-weight: 600;
     color: var(--text-secondary);
 }
@@ -105,10 +106,11 @@ select, input, textarea {
     border: 1px solid var(--bg-panel-border);
     color: var(--text-primary);
     font-family: var(--font-body);
-    padding: 0.75rem 1rem;
+    padding: 0.5rem 0.75rem;
     border-radius: var(--border-radius);
     outline: none;
     transition: var(--transition-fast);
+    font-size: 0.9rem;
 }
 
 select:focus, input:focus, textarea:focus {
@@ -118,17 +120,17 @@ select:focus, input:focus, textarea:focus {
 
 .select-wrapper select {
     appearance: none;
-    padding-right: 2.5rem;
+    padding-right: 2rem;
     cursor: pointer;
     background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2366FCF1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
     background-repeat: no-repeat;
-    background-position: right 1rem center;
+    background-position: right 0.5rem center;
     background-size: 1em;
 }
 
 /* Buttons */
 .btn {
-    padding: 0.75rem 1.5rem;
+    padding: 0.5rem 1rem;
     border: none;
     border-radius: var(--border-radius);
     font-family: var(--font-heading);
@@ -137,7 +139,7 @@ select:focus, input:focus, textarea:focus {
     transition: var(--transition-fast);
     text-transform: uppercase;
     letter-spacing: 1px;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
 }
 
 .btn-primary {
@@ -149,7 +151,7 @@ select:focus, input:focus, textarea:focus {
 .btn-primary:hover {
     background: #50E3C2;
     box-shadow: 0 0 20px rgba(102, 252, 241, 0.5);
-    transform: translateY(-2px);
+    transform: translateY(-1px);
 }
 
 .btn-danger {
@@ -173,13 +175,13 @@ select:focus, input:focus, textarea:focus {
 
 /* Sidebar */
 .sidebar {
-    width: 350px;
+    width: 300px;
     background: var(--bg-panel);
     border-right: 1px solid var(--bg-panel-border);
-    padding: 2rem;
+    padding: 1.5rem;
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 1.5rem;
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     overflow-y: auto;
@@ -189,67 +191,67 @@ select:focus, input:focus, textarea:focus {
 .panel {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.75rem;
 }
 
 .panel h2 {
     font-family: var(--font-heading);
     color: var(--accent-primary);
-    font-size: 1.5rem;
+    font-size: 1.2rem;
 }
 
 .panel h3 {
     font-family: var(--font-heading);
-    font-size: 1.2rem;
+    font-size: 1rem;
 }
 
 .subtitle {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     color: var(--text-secondary);
-    line-height: 1.5;
+    line-height: 1.4;
 }
 
 .form-group {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.4rem;
 }
 
 .form-group label {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 500;
     color: var(--text-secondary);
 }
 
 .form-group textarea {
     resize: vertical;
-    min-height: 150px;
+    min-height: 120px;
 }
 
 .count-indicator {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: var(--accent-primary);
     text-align: right;
 }
 
 .info-panel {
     margin-top: auto;
-    padding-top: 2rem;
+    padding-top: 1.5rem;
     border-top: 1px solid var(--bg-panel-border);
 }
 
 .badge {
     display: inline-block;
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.8rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 15px;
+    font-size: 0.7rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
     background: rgba(102, 252, 241, 0.1);
     color: var(--accent-primary);
     border: 1px solid var(--accent-primary);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.4rem;
 }
 
 /* Bracket Container */
@@ -260,7 +262,6 @@ select:focus, input:focus, textarea:focus {
     display: flex;
     flex-direction: column;
     position: relative;
-    /* Custom Scrollbar */
     scrollbar-width: thin;
     scrollbar-color: var(--accent-primary) var(--bg-main);
 }
@@ -291,28 +292,30 @@ select:focus, input:focus, textarea:focus {
 }
 
 .empty-icon {
-    font-size: 4rem;
-    filter: drop-shadow(0 0 20px rgba(102, 252, 241, 0.2));
+    font-size: 3rem;
+    filter: drop-shadow(0 0 15px rgba(102, 252, 241, 0.2));
 }
 
 .empty-state h2 {
     color: var(--text-secondary);
     font-family: var(--font-heading);
+    font-size: 1.2rem;
 }
 
 /* Bracket Structure */
 .bracket-wrapper {
     display: flex;
-    align-items: center;
-    gap: 3rem; /* Space between rounds */
+    align-items: stretch;
+    gap: 40px; /* Space for connectors */
     padding-bottom: 2rem;
     width: max-content;
+    min-height: 350px;
 }
 
 .round {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    width: 240px;
     position: relative;
 }
 
@@ -321,60 +324,50 @@ select:focus, input:focus, textarea:focus {
     font-family: var(--font-heading);
     color: var(--accent-primary);
     font-weight: 700;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
     text-transform: uppercase;
-    letter-spacing: 2px;
-    text-shadow: 0 0 10px rgba(102, 252, 241, 0.3);
+    letter-spacing: 1.5px;
+    font-size: 0.9rem;
+    text-shadow: 0 0 8px rgba(102, 252, 241, 0.3);
+    height: 20px; /* fixed height to not mess up flex layout */
 }
 
-.match-container {
+/* Match Wrappers */
+.match-wrapper {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    position: relative;
     justify-content: center;
-    flex: 1;
+    position: relative;
+    padding: 0.5rem 0;
 }
 
 /* Connectors */
-.match-container::after {
+/* Odd child draws the vertical line down to the even child, and the horizontal lines */
+.round:not(:last-child) .match-wrapper:nth-child(odd)::after {
     content: '';
     position: absolute;
-    right: -1.5rem;
-    width: 1.5rem;
+    right: -20px;
+    top: 50%;
+    height: 100%;
+    width: 20px;
+    border-top: 2px solid var(--connector-color);
+    border-right: 2px solid var(--connector-color);
+    border-bottom: 2px solid var(--connector-color);
+    border-radius: 0 6px 6px 0;
+    opacity: 0.4;
+}
+
+/* Next round matches draw horizontal lines back to the previous round */
+.round:not(:first-child) .match-wrapper:not(.third-place-wrapper)::before {
+    content: '';
+    position: absolute;
+    left: -20px;
+    top: 50%;
+    width: 20px;
     height: 2px;
     background-color: var(--connector-color);
-    top: 50%;
-    transform: translateY(-50%);
-    opacity: 0.5;
-}
-
-/* Remove connector from the last round (Finals) and 3rd place */
-.round:last-child .match-container::after,
-.third-place-container .match-container::after {
-    display: none;
-}
-
-/* Vertical connectors for pairs in earlier rounds */
-.round:not(:last-child) .match-container:nth-child(odd)::before {
-    content: '';
-    position: absolute;
-    right: -1.5rem;
-    top: 50%;
-    bottom: -1rem; /* Half the gap */
-    width: 2px;
-    background-color: var(--connector-color);
-    opacity: 0.5;
-}
-
-.round:not(:last-child) .match-container:nth-child(even)::before {
-    content: '';
-    position: absolute;
-    right: -1.5rem;
-    top: -1rem; /* Half the gap */
-    bottom: 50%;
-    width: 2px;
-    background-color: var(--connector-color);
-    opacity: 0.5;
+    opacity: 0.4;
 }
 
 /* Match Box */
@@ -382,29 +375,29 @@ select:focus, input:focus, textarea:focus {
     background: var(--match-bg);
     border: 1px solid var(--match-border);
     border-radius: var(--border-radius);
-    width: 260px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
     position: relative;
     z-index: 2;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     transition: var(--transition-fast);
 }
 
 .match:hover {
     border-color: var(--accent-primary);
-    box-shadow: 0 0 15px rgba(102, 252, 241, 0.2);
+    box-shadow: 0 0 10px rgba(102, 252, 241, 0.2);
 }
 
 .team {
     display: flex;
     align-items: center;
-    padding: 0.75rem 1rem;
+    padding: 0.4rem 0.75rem;
     cursor: pointer;
     transition: var(--transition-fast);
     border-bottom: 1px solid var(--bg-panel-border);
     position: relative;
+    height: 32px;
 }
 
 .team:last-child {
@@ -433,16 +426,16 @@ select:focus, input:focus, textarea:focus {
 }
 
 .team.bye {
-    background: rgba(69, 162, 158, 0.2);
+    background: rgba(69, 162, 158, 0.15);
     color: var(--accent-primary);
 }
 
 .seed {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: var(--text-muted);
-    min-width: 20px;
+    min-width: 16px;
     text-align: center;
-    margin-right: 0.5rem;
+    margin-right: 0.4rem;
     font-family: var(--font-heading);
 }
 
@@ -455,12 +448,13 @@ select:focus, input:focus, textarea:focus {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    font-size: 0.85rem;
 }
 
 /* Match Metadata (Date/Time) */
 .match-meta {
     background: rgba(0, 0, 0, 0.4);
-    padding: 0.5rem;
+    padding: 0.3rem 0.5rem;
     display: flex;
     gap: 0.5rem;
     border-top: 1px solid var(--match-border);
@@ -470,8 +464,8 @@ select:focus, input:focus, textarea:focus {
     background: transparent;
     border: none;
     border-bottom: 1px solid var(--bg-panel-border);
-    padding: 0.25rem;
-    font-size: 0.8rem;
+    padding: 0.2rem;
+    font-size: 0.75rem;
     color: var(--text-secondary);
     border-radius: 0;
     width: 100%;
@@ -480,8 +474,9 @@ select:focus, input:focus, textarea:focus {
 .match-meta input[type="date"]::-webkit-calendar-picker-indicator,
 .match-meta input[type="time"]::-webkit-calendar-picker-indicator {
     filter: invert(1);
-    opacity: 0.5;
+    opacity: 0.4;
     cursor: pointer;
+    padding: 0;
 }
 
 .match-meta input:focus {
@@ -489,20 +484,19 @@ select:focus, input:focus, textarea:focus {
     border-bottom-color: var(--accent-primary);
 }
 
-/* Third Place Container */
+/* Third Place Alignments */
 .third-place-container {
-    margin-top: 3rem;
-    position: relative;
+    position: absolute;
+    bottom: -80px; /* Position it below the final */
+    left: 0;
+    width: 100%;
+    opacity: 0.9;
 }
 
-.third-place-container::before {
-    content: '';
-    position: absolute;
-    top: -1.5rem;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: dashed var(--bg-panel-border);
+.third-place-title {
+    margin-top: 1rem;
+    color: var(--accent-secondary);
+    text-shadow: 0 0 8px rgba(233, 69, 96, 0.3);
 }
 
 /* Responsive */

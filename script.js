@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'jiunbs_2026_esports_state';
+const STORAGE_KEY = 'jiunbs_2026_esports_data';
 
 // DOM Elements
 const form = {
@@ -16,13 +16,21 @@ const bracketContainer = document.getElementById('bracket-container');
 const bracketWrapper = document.getElementById('bracket-wrapper');
 const emptyState = document.getElementById('empty-state');
 
-// Application State
-let appState = {
-    game: 'lol',
-    participants: [],
-    bracket: [],
-    thirdPlaceMatch: null
+// Application State structure
+let globalState = {
+    lol: { participants: [], bracket: [], thirdPlaceMatch: null },
+    valorant: { participants: [], bracket: [], thirdPlaceMatch: null },
+    cs2: { participants: [], bracket: [], thirdPlaceMatch: null },
+    brawlstars: { participants: [], bracket: [], thirdPlaceMatch: null },
+    freefire: { participants: [], bracket: [], thirdPlaceMatch: null },
+    futebol: { participants: [], bracket: [], thirdPlaceMatch: null }
 };
+
+let currentGame = 'lol';
+
+function getAppState() {
+    return globalState[currentGame];
+}
 
 // Modality Info Mapping
 const gameInfo = {
@@ -43,22 +51,21 @@ function init() {
 
 function setupEventListeners() {
     form.gameSelect.addEventListener('change', (e) => {
-        updateGameInfo(e.target.value);
+        currentGame = e.target.value;
+        saveState();
+        updateUI();
     });
 
     form.participantList.addEventListener('input', updateCountIndicator);
 
-    form.generateBtn.addEventListener('click', () => {
-        generateTournament();
-    });
+    form.generateBtn.addEventListener('click', generateTournament);
 
     form.clearBtn.addEventListener('click', () => {
-        if (confirm('Tem certeza que deseja limpar todos os dados do torneio atual?')) {
+        if (confirm('Tem certeza que deseja limpar todos os dados desta modalidade?')) {
             clearData();
         }
     });
     
-    // Delegate events for bracket interaction
     bracketWrapper.addEventListener('click', handleBracketClick);
     bracketWrapper.addEventListener('change', handleBracketChange);
 }
@@ -76,7 +83,7 @@ function updateGameInfo(gameKey) {
 
 function updateCountIndicator() {
     const lines = form.participantList.value.split('\n').filter(line => line.trim() !== '');
-    const label = gameInfo[form.gameSelect.value].label.toLowerCase();
+    const label = gameInfo[currentGame].label.toLowerCase();
     form.countIndicator.textContent = `${lines.length} ${label} listados`;
 }
 
@@ -110,7 +117,6 @@ function generateTournament() {
         .map(p => p.trim())
         .filter(p => p !== '');
         
-    // Remove numbers if user typed "1. Equipe A"
     const participants = rawList.map(p => p.replace(/^\d+[\.\-]\s*/, ''));
     
     if (participants.length < 2) {
@@ -118,7 +124,6 @@ function generateTournament() {
         return;
     }
 
-    const game = form.gameSelect.value;
     const N = participants.length;
     const roundsCount = Math.ceil(Math.log2(N));
     const seeds = getBracketSeeding(N);
@@ -146,7 +151,6 @@ function generateTournament() {
             nextMatchId: roundsCount > 1 ? `r2_m${Math.floor(i/2) + 1}` : null
         };
         
-        // Auto-advance BYEs
         if (t1.isBye && !t2.isBye) match.winnerSeed = t2.seed;
         else if (t2.isBye && !t1.isBye) match.winnerSeed = t1.seed;
         
@@ -188,12 +192,10 @@ function generateTournament() {
         };
     }
 
-    appState = {
-        game,
-        participants,
-        bracket,
-        thirdPlaceMatch
-    };
+    let state = getAppState();
+    state.participants = participants;
+    state.bracket = bracket;
+    state.thirdPlaceMatch = thirdPlaceMatch;
 
     propagateWinners();
     saveState();
@@ -201,15 +203,17 @@ function generateTournament() {
 }
 
 function propagateWinners() {
-    let { bracket, thirdPlaceMatch } = appState;
+    let state = getAppState();
+    let bracket = state.bracket;
+    let thirdPlaceMatch = state.thirdPlaceMatch;
     
+    if (!bracket || bracket.length === 0) return;
+
     // Clear future matches
     for(let r=1; r<bracket.length; r++) {
         for(let m of bracket[r]) {
             m.team1 = null;
             m.team2 = null;
-            // if it was previously decided but now teams are null, reset winner
-            // we'll handle this smoothly: if we clear teams, we also clear winner if it's invalid
         }
     }
     if (thirdPlaceMatch) { 
@@ -232,7 +236,7 @@ function propagateWinners() {
         }
     }
     
-    // Clean up winners that are no longer valid (e.g. if previous round changed)
+    // Clean up winners that are no longer valid
     for(let r=1; r<bracket.length; r++) {
         for(let m of bracket[r]) {
             if (m.winnerSeed) {
@@ -295,9 +299,10 @@ function renderTeam(team, matchWinnerSeed, matchId) {
     `;
 }
 
-function renderMatch(match) {
+function renderMatch(match, isThirdPlace = false) {
+    const wrapperClass = isThirdPlace ? "match-wrapper third-place-wrapper" : "match-wrapper";
     return `
-        <div class="match-container">
+        <div class="${wrapperClass}">
             <div class="match">
                 <div class="teams">
                     ${renderTeam(match.team1, match.winnerSeed, match.id)}
@@ -313,7 +318,8 @@ function renderMatch(match) {
 }
 
 function renderBracket() {
-    if (!appState.bracket || appState.bracket.length === 0) {
+    let state = getAppState();
+    if (!state.bracket || state.bracket.length === 0) {
         emptyState.style.display = 'flex';
         bracketWrapper.innerHTML = '';
         return;
@@ -322,24 +328,25 @@ function renderBracket() {
     emptyState.style.display = 'none';
     
     let html = '';
-    const totalRounds = appState.bracket.length;
+    const totalRounds = state.bracket.length;
     
     for(let r=0; r<totalRounds; r++) {
+        let roundHtml = state.bracket[r].map(m => renderMatch(m)).join('');
+        
+        // Final Round: append 3rd place match absolutely positioned
+        if (r === totalRounds - 1 && state.thirdPlaceMatch) {
+            roundHtml += `
+                <div class="third-place-container">
+                    <div class="round-header third-place-title">3º Lugar</div>
+                    ${renderMatch(state.thirdPlaceMatch, true)}
+                </div>
+            `;
+        }
+
         html += `
             <div class="round">
                 <div class="round-header">${getRoundName(r, totalRounds)}</div>
-                ${appState.bracket[r].map(m => renderMatch(m)).join('')}
-            </div>
-        `;
-    }
-    
-    if (appState.thirdPlaceMatch) {
-        html += `
-            <div class="round third-place">
-                <div class="round-header">3º Lugar</div>
-                <div class="third-place-container">
-                    ${renderMatch(appState.thirdPlaceMatch)}
-                </div>
+                ${roundHtml}
             </div>
         `;
     }
@@ -349,10 +356,11 @@ function renderBracket() {
 
 // Interaction Handlers
 function findMatch(matchId) {
-    if (appState.thirdPlaceMatch && appState.thirdPlaceMatch.id === matchId) {
-        return appState.thirdPlaceMatch;
+    let state = getAppState();
+    if (state.thirdPlaceMatch && state.thirdPlaceMatch.id === matchId) {
+        return state.thirdPlaceMatch;
     }
-    for (let round of appState.bracket) {
+    for (let round of state.bracket) {
         for (let m of round) {
             if (m.id === matchId) return m;
         }
@@ -372,13 +380,9 @@ function handleBracketClick(e) {
     const match = findMatch(matchId);
     if (!match) return;
     
-    // Don't allow changing if one team is missing
     if (!match.team1 || !match.team2) return;
-    
-    // Don't allow changing if one team is a BYE (auto-advanced)
     if (match.team1.isBye || match.team2.isBye) return;
     
-    // Toggle winner
     if (match.winnerSeed === seed) {
         match.winnerSeed = null;
     } else {
@@ -406,14 +410,26 @@ function handleBracketChange(e) {
 
 // State Management
 function saveState() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ globalState, currentGame }));
 }
 
 function loadState() {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
         try {
-            appState = JSON.parse(saved);
+            const data = JSON.parse(saved);
+            if (data.globalState) {
+                globalState = data.globalState;
+                currentGame = data.currentGame || 'lol';
+            } else if (data.game) {
+                // Migrate from v1
+                globalState[data.game] = {
+                    participants: data.participants || [],
+                    bracket: data.bracket || [],
+                    thirdPlaceMatch: data.thirdPlaceMatch || null
+                };
+                currentGame = data.game;
+            }
         } catch(e) {
             console.error("Error parsing saved state", e);
         }
@@ -421,15 +437,9 @@ function loadState() {
 }
 
 function clearData() {
-    localStorage.removeItem(STORAGE_KEY);
-    appState = {
-        game: 'lol',
-        participants: [],
-        bracket: [],
-        thirdPlaceMatch: null
-    };
+    globalState[currentGame] = { participants: [], bracket: [], thirdPlaceMatch: null };
+    saveState();
     
-    // Reset form
     form.participantList.value = '';
     form.participantCount.value = 8;
     updateCountIndicator();
@@ -438,20 +448,17 @@ function clearData() {
 }
 
 function updateUI() {
-    if (appState.game) {
-        form.gameSelect.value = appState.game;
-        updateGameInfo(appState.game);
-    } else {
-        updateGameInfo('lol');
-    }
+    form.gameSelect.value = currentGame;
+    updateGameInfo(currentGame);
     
-    if (appState.participants && appState.participants.length > 0) {
-        // Just populate text area with names if empty
-        if (form.participantList.value === '') {
-            form.participantList.value = appState.participants.join('\n');
-            updateCountIndicator();
-        }
+    let state = getAppState();
+    
+    if (state.participants && state.participants.length > 0) {
+        form.participantList.value = state.participants.join('\n');
+    } else {
+        form.participantList.value = '';
     }
+    updateCountIndicator();
     
     renderBracket();
 }
