@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JIUnBs 2026 eSports - Chaveamento</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-content">
+            <h1 class="logo">JIUnBs <span>2026</span> <span class="esports-text">eSports</span></h1>
+            
+            <div class="game-selector">
+                <label for="game-select">Modalidade:</label>
+                <div class="select-wrapper">
+                    <select id="game-select">
+                        <option value="lol">League of Legends</option>
+                        <option value="valorant">Valorant</option>
+                        <option value="cs2">Counter-Strike 2</option>
+                        <option value="brawlstars">Brawl Stars</option>
+                        <option value="freefire">Free Fire</option>
+                        <option value="futebol">Futebol Eletrônico</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button id="clear-data-btn" class="btn btn-danger">Limpar Dados</button>
+        </div>
+    </header>
+
+    <main class="app-main">
+        <aside class="sidebar" id="config-sidebar">
+            <div class="panel">
+                <h2>Configuração do Torneio</h2>
+                <p class="subtitle">Insira as equipes/jogadores na ordem de cabeça de chave (Seed).</p>
+                
+                <div class="form-group">
+                    <label for="participant-count">Quantidade Esperada:</label>
+                    <input type="number" id="participant-count" min="2" max="64" value="8">
+                </div>
+
+                <div class="form-group">
+                    <label for="participant-list">Participantes (um por linha):</label>
+                    <textarea id="participant-list" rows="10" placeholder="1. Equipe A&#10;2. Equipe B&#10;..."></textarea>
+                    <span class="count-indicator" id="count-indicator">0 participantes listados</span>
+                </div>
+
+                <button id="generate-btn" class="btn btn-primary">Gerar Chaveamento</button>
+            </div>
+            
+            <div class="panel info-panel">
+                <h3>Informações da Modalidade</h3>
+                <div id="game-info">
+                    <span class="badge lol-badge">League of Legends</span>
+                    <p>Modo: Coletivo</p>
+                </div>
+            </div>
+        </aside>
+
+        <section class="bracket-container" id="bracket-container">
+            <div class="empty-state" id="empty-state">
+                <div class="empty-icon">🏆</div>
+                <h2>Nenhum torneio gerado</h2>
+                <p>Configure os participantes na barra lateral e clique em "Gerar Chaveamento" para começar.</p>
+            </div>
+            <div class="bracket-wrapper" id="bracket-wrapper">
+                <!-- Bracket will be injected here via JS -->
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
