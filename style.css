@@ -309,7 +309,7 @@ select:focus, input:focus, textarea:focus {
     gap: 40px; /* Space for connectors */
     padding-bottom: 2rem;
     width: max-content;
-    min-height: 350px;
+    min-height: 400px;
 }
 
 .round {
@@ -329,37 +329,46 @@ select:focus, input:focus, textarea:focus {
     letter-spacing: 1.5px;
     font-size: 0.9rem;
     text-shadow: 0 0 8px rgba(102, 252, 241, 0.3);
-    height: 20px; /* fixed height to not mess up flex layout */
+    height: 20px; 
+    flex-shrink: 0;
 }
 
-/* Match Wrappers */
-.match-wrapper {
+/* Match Pair wraps 2 matches and evenly spaces them */
+.match-pair {
     flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: space-around;
     position: relative;
+}
+
+/* Match Container wraps 1 match */
+.match-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     padding: 0.5rem 0;
 }
 
-/* Connectors */
-/* Odd child draws the vertical line down to the even child, and the horizontal lines */
-.round:not(:last-child) .match-wrapper:nth-child(odd)::after {
+/* The vertical bracket connector */
+.round:not(:last-child) .match-pair::after {
     content: '';
     position: absolute;
     right: -20px;
-    top: 50%;
-    height: 100%;
+    top: 25%;
+    bottom: 25%;
     width: 20px;
     border-top: 2px solid var(--connector-color);
     border-right: 2px solid var(--connector-color);
     border-bottom: 2px solid var(--connector-color);
     border-radius: 0 6px 6px 0;
     opacity: 0.4;
+    pointer-events: none;
 }
 
-/* Next round matches draw horizontal lines back to the previous round */
-.round:not(:first-child) .match-wrapper:not(.third-place-wrapper)::before {
+/* Horizontal line from the next match to meet the bracket */
+.round:not(:first-child) .match-container::before {
     content: '';
     position: absolute;
     left: -20px;
@@ -368,6 +377,25 @@ select:focus, input:focus, textarea:focus {
     height: 2px;
     background-color: var(--connector-color);
     opacity: 0.4;
+    pointer-events: none;
+}
+
+/* Third Place Alignment */
+.third-place-container {
+    position: absolute;
+    bottom: -80px; 
+    left: 0;
+    width: 100%;
+}
+
+.third-place-title {
+    margin-top: 1rem;
+    color: var(--accent-secondary);
+    text-shadow: 0 0 8px rgba(233, 69, 96, 0.3);
+}
+
+.third-place-container .match-container::before {
+    display: none; /* Do not draw connecting line for 3rd place */
 }
 
 /* Match Box */
@@ -482,21 +510,6 @@ select:focus, input:focus, textarea:focus {
 .match-meta input:focus {
     box-shadow: none;
     border-bottom-color: var(--accent-primary);
-}
-
-/* Third Place Alignments */
-.third-place-container {
-    position: absolute;
-    bottom: -80px; /* Position it below the final */
-    left: 0;
-    width: 100%;
-    opacity: 0.9;
-}
-
-.third-place-title {
-    margin-top: 1rem;
-    color: var(--accent-secondary);
-    text-shadow: 0 0 8px rgba(233, 69, 96, 0.3);
 }
 
 /* Responsive */

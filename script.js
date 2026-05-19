@@ -299,10 +299,10 @@ function renderTeam(team, matchWinnerSeed, matchId) {
     `;
 }
 
-function renderMatch(match, isThirdPlace = false) {
-    const wrapperClass = isThirdPlace ? "match-wrapper third-place-wrapper" : "match-wrapper";
+function renderMatch(match) {
+    if (!match) return '';
     return `
-        <div class="${wrapperClass}">
+        <div class="match-container">
             <div class="match">
                 <div class="teams">
                     ${renderTeam(match.team1, match.winnerSeed, match.id)}
@@ -331,14 +331,26 @@ function renderBracket() {
     const totalRounds = state.bracket.length;
     
     for(let r=0; r<totalRounds; r++) {
-        let roundHtml = state.bracket[r].map(m => renderMatch(m)).join('');
+        let roundHtml = '';
+        let matches = state.bracket[r];
+        
+        // Group matches into pairs for perfect bracket line connections
+        for(let i=0; i<matches.length; i+=2) {
+            let m1 = matches[i];
+            let m2 = matches[i+1];
+            
+            roundHtml += `<div class="match-pair">`;
+            roundHtml += renderMatch(m1);
+            if (m2) roundHtml += renderMatch(m2);
+            roundHtml += `</div>`;
+        }
         
         // Final Round: append 3rd place match absolutely positioned
         if (r === totalRounds - 1 && state.thirdPlaceMatch) {
             roundHtml += `
                 <div class="third-place-container">
                     <div class="round-header third-place-title">3º Lugar</div>
-                    ${renderMatch(state.thirdPlaceMatch, true)}
+                    ${renderMatch(state.thirdPlaceMatch)}
                 </div>
             `;
         }
