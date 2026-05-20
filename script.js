@@ -10,6 +10,7 @@ const form = {
     countIndicator: document.getElementById('count-indicator'),
     gameInfoBadge: document.querySelector('.info-panel .badge'),
     gameInfoText: document.querySelector('.info-panel p'),
+    exportPdfBtn: document.getElementById('export-pdf-btn'),
     exportBtn: document.getElementById('export-btn'),
     importBtn: document.getElementById('import-btn'),
     importFile: document.getElementById('import-file')
@@ -69,12 +70,59 @@ function setupEventListeners() {
         }
     });
     
+    form.exportPdfBtn.addEventListener('click', handleExportPDF);
     form.exportBtn.addEventListener('click', handleExport);
     form.importBtn.addEventListener('click', () => form.importFile.click());
     form.importFile.addEventListener('change', handleImport);
     
     bracketWrapper.addEventListener('click', handleBracketClick);
     bracketWrapper.addEventListener('change', handleBracketChange);
+}
+
+function handleExportPDF() {
+    let state = getAppState();
+    if (!state.bracket || state.bracket.length === 0) {
+        alert("Gere um chaveamento primeiro!");
+        return;
+    }
+
+    const originalText = form.exportPdfBtn.textContent;
+    form.exportPdfBtn.textContent = 'Gerando...';
+    form.exportPdfBtn.disabled = true;
+
+    // html2canvas needs to render the wrapper which might be overflowing
+    // We target the bracketWrapper directly
+    html2canvas(bracketWrapper, {
+        backgroundColor: '#0B0C10',
+        scale: 2 // Better resolution for PDF
+    }).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        
+        const { jsPDF } = window.jspdf;
+        
+        // Match PDF size to the actual bracket size (in pixels)
+        const pdfWidth = canvas.width;
+        const pdfHeight = canvas.height;
+        
+        const pdf = new jsPDF({
+            orientation: pdfWidth > pdfHeight ? 'landscape' : 'portrait',
+            unit: 'px',
+            format: [pdfWidth, pdfHeight]
+        });
+
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        
+        let gameName = gameInfo[currentGame] ? gameInfo[currentGame].name.replace(/\s+/g, '_') : 'torneio';
+        pdf.save(`chaveamento_${gameName}.pdf`);
+        
+        form.exportPdfBtn.textContent = originalText;
+        form.exportPdfBtn.disabled = false;
+    }).catch(err => {
+        console.error(err);
+        alert("Erro ao gerar PDF.");
+        form.exportPdfBtn.textContent = originalText;
+        form.exportPdfBtn.disabled = false;
+    });
 }
 
 function handleExport() {
