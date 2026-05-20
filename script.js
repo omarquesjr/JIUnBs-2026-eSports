@@ -9,7 +9,10 @@ const form = {
     clearBtn: document.getElementById('clear-data-btn'),
     countIndicator: document.getElementById('count-indicator'),
     gameInfoBadge: document.querySelector('.info-panel .badge'),
-    gameInfoText: document.querySelector('.info-panel p')
+    gameInfoText: document.querySelector('.info-panel p'),
+    exportBtn: document.getElementById('export-btn'),
+    importBtn: document.getElementById('import-btn'),
+    importFile: document.getElementById('import-file')
 };
 
 const bracketContainer = document.getElementById('bracket-container');
@@ -66,8 +69,49 @@ function setupEventListeners() {
         }
     });
     
+    form.exportBtn.addEventListener('click', handleExport);
+    form.importBtn.addEventListener('click', () => form.importFile.click());
+    form.importFile.addEventListener('change', handleImport);
+    
     bracketWrapper.addEventListener('click', handleBracketClick);
     bracketWrapper.addEventListener('change', handleBracketChange);
+}
+
+function handleExport() {
+    const dataStr = JSON.stringify({ globalState, currentGame });
+    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+    
+    const exportFileDefaultName = 'jiunbs-torneio-dados.json';
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+}
+
+function handleImport(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            if (data.globalState) {
+                globalState = data.globalState;
+                if (data.currentGame) currentGame = data.currentGame;
+                saveState();
+                updateUI();
+                alert('Dados importados com sucesso!');
+            } else {
+                alert('Formato de arquivo inválido.');
+            }
+        } catch (err) {
+            alert('Erro ao ler o arquivo.');
+        }
+        form.importFile.value = ''; // reset
+    };
+    reader.readAsText(file);
 }
 
 function updateGameInfo(gameKey) {
