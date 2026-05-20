@@ -100,9 +100,10 @@ function handleExportPDF() {
         
         const { jsPDF } = window.jspdf;
         
-        // Match PDF size to the actual bracket size (in pixels)
-        const pdfWidth = canvas.width;
-        const pdfHeight = canvas.height;
+        // Match PDF size to the bracket size + 60px padding on all sides
+        const padding = 60;
+        const pdfWidth = canvas.width + (padding * 2);
+        const pdfHeight = canvas.height + (padding * 2);
         
         const pdf = new jsPDF({
             orientation: pdfWidth > pdfHeight ? 'landscape' : 'portrait',
@@ -110,7 +111,12 @@ function handleExportPDF() {
             format: [pdfWidth, pdfHeight]
         });
 
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        // Fill background color for the padded areas to match dark theme
+        pdf.setFillColor('#0B0C10');
+        pdf.rect(0, 0, pdfWidth, pdfHeight, 'F');
+
+        // Draw image in the center
+        pdf.addImage(imgData, 'PNG', padding, padding, canvas.width, canvas.height);
         
         let gameName = gameInfo[currentGame] ? gameInfo[currentGame].name.replace(/\s+/g, '_') : 'torneio';
         pdf.save(`chaveamento_${gameName}.pdf`);

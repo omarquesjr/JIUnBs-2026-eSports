@@ -318,7 +318,7 @@ select:focus, input:focus, textarea:focus {
     display: flex;
     align-items: stretch;
     gap: 40px; /* Space for connectors */
-    padding-bottom: 2rem;
+    padding-bottom: 180px; /* Leave space at bottom for 3rd place match */
     width: max-content;
     min-height: 400px;
 }
@@ -394,7 +394,8 @@ select:focus, input:focus, textarea:focus {
 /* Third Place Alignment */
 .third-place-container {
     position: absolute;
-    bottom: -80px; 
+    top: 50%;
+    margin-top: 100px; /* Ensures it stays right below the final match */
     left: 0;
     width: 100%;
 }
