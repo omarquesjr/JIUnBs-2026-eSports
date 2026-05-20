@@ -13,7 +13,16 @@ const form = {
     exportPdfBtn: document.getElementById('export-pdf-btn'),
     exportBtn: document.getElementById('export-btn'),
     importBtn: document.getElementById('import-btn'),
-    importFile: document.getElementById('import-file')
+    importFile: document.getElementById('import-file'),
+    manageRostersBtn: document.getElementById('manage-rosters-btn')
+};
+
+const modal = {
+    overlay: document.getElementById('roster-modal'),
+    closeBtn: document.getElementById('close-roster-modal'),
+    teamSelect: document.getElementById('roster-team-select'),
+    formContainer: document.getElementById('roster-form-container'),
+    saveBtn: document.getElementById('save-roster-btn')
 };
 
 const bracketContainer = document.getElementById('bracket-container');
@@ -22,12 +31,12 @@ const emptyState = document.getElementById('empty-state');
 
 // Application State structure
 let globalState = {
-    lol: { participants: [], bracket: [], thirdPlaceMatch: null },
-    valorant: { participants: [], bracket: [], thirdPlaceMatch: null },
-    cs2: { participants: [], bracket: [], thirdPlaceMatch: null },
-    brawlstars: { participants: [], bracket: [], thirdPlaceMatch: null },
-    freefire: { participants: [], bracket: [], thirdPlaceMatch: null },
-    futebol: { participants: [], bracket: [], thirdPlaceMatch: null }
+    lol: { participants: [], bracket: [], thirdPlaceMatch: null, rosters: {} },
+    valorant: { participants: [], bracket: [], thirdPlaceMatch: null, rosters: {} },
+    cs2: { participants: [], bracket: [], thirdPlaceMatch: null, rosters: {} },
+    brawlstars: { participants: [], bracket: [], thirdPlaceMatch: null, rosters: {} },
+    freefire: { participants: [], bracket: [], thirdPlaceMatch: null, rosters: {} },
+    futebol: { participants: [], bracket: [], thirdPlaceMatch: null, rosters: {} }
 };
 
 let currentGame = 'lol';
@@ -44,6 +53,15 @@ const gameInfo = {
     brawlstars: { name: 'Brawl Stars', type: 'Coletivo', label: 'Equipes' },
     freefire: { name: 'Free Fire', type: 'Coletivo', label: 'Equipes' },
     futebol: { name: 'Futebol Eletrônico', type: 'Individual', label: 'Jogadores' }
+};
+
+const rosterRules = {
+    lol: { starters: 5, subs: 1 },
+    valorant: { starters: 5, subs: 1 },
+    cs2: { starters: 5, subs: 1 },
+    brawlstars: { starters: 3, subs: 1 },
+    freefire: { starters: 4, subs: 1 },
+    futebol: null // disabled
 };
 
 // Initialize
@@ -75,10 +93,158 @@ function setupEventListeners() {
     form.importBtn.addEventListener('click', () => form.importFile.click());
     form.importFile.addEventListener('change', handleImport);
     
+    form.manageRostersBtn.addEventListener('click', openRosterModal);
+    modal.closeBtn.addEventListener('click', closeRosterModal);
+    modal.teamSelect.addEventListener('change', handleRosterTeamChange);
+    modal.saveBtn.addEventListener('click', saveRoster);
+
     bracketWrapper.addEventListener('click', handleBracketClick);
     bracketWrapper.addEventListener('change', handleBracketChange);
 }
 
+// Roster Management Logic
+function openRosterModal() {
+    const state = getAppState();
+    if (!state.participants || state.participants.length === 0) {
+        alert("Gere um chaveamento com equipes primeiro para gerenciar elencos.");
+        return;
+    }
+    
+    modal.teamSelect.innerHTML = '<option value="">Selecione uma equipe...</option>';
+    state.participants.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p;
+        opt.textContent = p;
+        modal.teamSelect.appendChild(opt);
+    });
+    
+    modal.formContainer.style.display = 'none';
+    modal.formContainer.innerHTML = '';
+    
+    modal.overlay.style.display = 'flex';
+}
+
+function closeRosterModal() {
+    modal.overlay.style.display = 'none';
+}
+
+function handleRosterTeamChange() {
+    const team = modal.teamSelect.value;
+    if (!team) {
+        modal.formContainer.style.display = 'none';
+        return;
+    }
+    renderRosterForm(team);
+}
+
+function renderRosterForm(team) {
+    const rules = rosterRules[currentGame];
+    if (!rules) return;
+    
+    const state = getAppState();
+    const roster = state.rosters[team] || [];
+    
+    let html = '';
+    
+    for (let i = 0; i < rules.starters; i++) {
+        const player = roster[i] || { nick: '', name: '', id: '' };
+        html += generatePlayerRowHtml(`Titular ${i + 1}`, i, player, false);
+    }
+    
+    for (let i = 0; i < rules.subs; i++) {
+        const idx = rules.starters + i;
+        const player = roster[idx] || { nick: '', name: '', id: '' };
+        html += generatePlayerRowHtml(`Reserva ${i + 1} (Opcional)`, idx, player, true);
+    }
+    
+    modal.formContainer.innerHTML = html;
+    modal.formContainer.style.display = 'flex';
+}
+
+function generatePlayerRowHtml(title, index, player, isOptional) {
+    const req = isOptional ? '' : 'required';
+    const subClass = isOptional ? 'sub-row' : '';
+    return `
+        <div class="player-row ${subClass}" data-index="${index}" data-optional="${isOptional}">
+            <div class="player-row-header">${title}</div>
+            <div class="player-fields">
+                <div class="form-group">
+                    <label>Nickname</label>
+                    <input type="text" class="p-nick" value="${player.nick}" placeholder="Ex: Faker" ${req}>
+                </div>
+                <div class="form-group">
+                    <label>Nome Completo</label>
+                    <input type="text" class="p-name" value="${player.name}" placeholder="Nome do Aluno" ${req}>
+                </div>
+                <div class="form-group">
+                    <label>Matrícula UnB</label>
+                    <input type="text" class="p-id" value="${player.id}" placeholder="Apenas 9 números" pattern="^\\d{9}$" ${req} maxlength="9">
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function saveRoster() {
+    const team = modal.teamSelect.value;
+    if (!team) return;
+    
+    const rows = modal.formContainer.querySelectorAll('.player-row');
+    let newRoster = [];
+    let hasError = false;
+    
+    rows.forEach(row => {
+        const isOptional = row.dataset.optional === 'true';
+        const nickInput = row.querySelector('.p-nick');
+        const nameInput = row.querySelector('.p-name');
+        const idInput = row.querySelector('.p-id');
+        
+        nickInput.classList.remove('input-error');
+        nameInput.classList.remove('input-error');
+        idInput.classList.remove('input-error');
+        
+        const nick = nickInput.value.trim();
+        const name = nameInput.value.trim();
+        const id = idInput.value.trim();
+        
+        const isEmpty = !nick && !name && !id;
+        
+        if (isOptional && isEmpty) {
+            newRoster.push({ nick: '', name: '', id: '' });
+            return;
+        }
+        
+        let rowError = false;
+        if (!nick) { nickInput.classList.add('input-error'); rowError = true; }
+        if (!name) { nameInput.classList.add('input-error'); rowError = true; }
+        
+        const idRegex = /^\d{9}$/;
+        if (!idRegex.test(id)) {
+            idInput.classList.add('input-error');
+            rowError = true;
+        }
+        
+        if (rowError) {
+            hasError = true;
+        } else {
+            newRoster.push({ nick, name, id });
+        }
+    });
+    
+    if (hasError) {
+        alert("Preencha corretamente todos os campos. A Matrícula UnB deve ter exatamente 9 números.");
+        return;
+    }
+    
+    const state = getAppState();
+    state.rosters[team] = newRoster;
+    saveState();
+    
+    alert(`Elenco da equipe "${team}" salvo com sucesso!`);
+    closeRosterModal();
+}
+
+// Export PDF Logic
 function handleExportPDF() {
     let state = getAppState();
     if (!state.bracket || state.bracket.length === 0) {
@@ -90,17 +256,14 @@ function handleExportPDF() {
     form.exportPdfBtn.textContent = 'Gerando...';
     form.exportPdfBtn.disabled = true;
 
-    // html2canvas needs to render the wrapper which might be overflowing
-    // We target the bracketWrapper directly
     html2canvas(bracketWrapper, {
         backgroundColor: '#0B0C10',
-        scale: 2 // Better resolution for PDF
+        scale: 2
     }).then(canvas => {
         const imgData = canvas.toDataURL('image/png');
         
         const { jsPDF } = window.jspdf;
         
-        // Match PDF size to the bracket size + 60px padding on all sides
         const padding = 60;
         const pdfWidth = canvas.width + (padding * 2);
         const pdfHeight = canvas.height + (padding * 2);
@@ -111,11 +274,8 @@ function handleExportPDF() {
             format: [pdfWidth, pdfHeight]
         });
 
-        // Fill background color for the padded areas to match dark theme
         pdf.setFillColor('#0B0C10');
         pdf.rect(0, 0, pdfWidth, pdfHeight, 'F');
-
-        // Draw image in the center
         pdf.addImage(imgData, 'PNG', padding, padding, canvas.width, canvas.height);
         
         let gameName = gameInfo[currentGame] ? gameInfo[currentGame].name.replace(/\s+/g, '_') : 'torneio';
@@ -177,6 +337,12 @@ function updateGameInfo(gameKey) {
     form.gameInfoText.textContent = `Modo: ${info.type} (${info.label})`;
     
     document.querySelector('label[for="participant-count"]').textContent = `Quantidade Esperada (${info.label}):`;
+    
+    if (gameKey === 'futebol') {
+        form.manageRostersBtn.style.display = 'none';
+    } else {
+        form.manageRostersBtn.style.display = 'block';
+    }
 }
 
 function updateCountIndicator() {
@@ -432,7 +598,6 @@ function renderBracket() {
         let roundHtml = '';
         let matches = state.bracket[r];
         
-        // Group matches into pairs for perfect bracket line connections
         for(let i=0; i<matches.length; i+=2) {
             let m1 = matches[i];
             let m2 = matches[i+1];
@@ -443,7 +608,6 @@ function renderBracket() {
             roundHtml += `</div>`;
         }
         
-        // Final Round: append 3rd place match absolutely positioned
         if (r === totalRounds - 1 && state.thirdPlaceMatch) {
             roundHtml += `
                 <div class="third-place-container">
@@ -508,7 +672,7 @@ function handleBracketChange(e) {
     if (e.target.tagName !== 'INPUT') return;
     
     const matchId = e.target.dataset.matchId;
-    const field = e.target.dataset.field; // 'date' or 'time'
+    const field = e.target.dataset.field;
     const value = e.target.value;
     
     const match = findMatch(matchId);
@@ -529,14 +693,20 @@ function loadState() {
         try {
             const data = JSON.parse(saved);
             if (data.globalState) {
+                // Ensure rosters exist for migration from older versions
+                for (let key in data.globalState) {
+                    if (!data.globalState[key].rosters) {
+                        data.globalState[key].rosters = {};
+                    }
+                }
                 globalState = data.globalState;
                 currentGame = data.currentGame || 'lol';
             } else if (data.game) {
-                // Migrate from v1
                 globalState[data.game] = {
                     participants: data.participants || [],
                     bracket: data.bracket || [],
-                    thirdPlaceMatch: data.thirdPlaceMatch || null
+                    thirdPlaceMatch: data.thirdPlaceMatch || null,
+                    rosters: {}
                 };
                 currentGame = data.game;
             }
@@ -547,7 +717,7 @@ function loadState() {
 }
 
 function clearData() {
-    globalState[currentGame] = { participants: [], bracket: [], thirdPlaceMatch: null };
+    globalState[currentGame] = { participants: [], bracket: [], thirdPlaceMatch: null, rosters: {} };
     saveState();
     
     form.participantList.value = '';
